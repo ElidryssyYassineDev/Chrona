@@ -1,3 +1,5 @@
+# 14 — API Design
+
 **Document ID:** SYS-014
 **Status:** Draft — pending review
 **Version:** 1.0.0
@@ -64,6 +66,8 @@ Login itself is handled entirely by Keycloak, via the OIDC Authorization Code fl
 | POST | `/api/v1/projects/{id}/members` | Add a project member | Manager |
 | DELETE | `/api/v1/projects/{id}/members/{employeeId}` | Remove a project member | Manager |
 
+The Archive transition is defined in `11-state-diagrams.md`, Section 4.
+
 ### Work Allocation
 
 | Method | URL | Purpose | Required Role(s) |
@@ -73,6 +77,8 @@ Login itself is handled entirely by Keycloak, via the OIDC Authorization Code fl
 | POST | `/api/v1/allocations` | Create an allocation | Manager |
 | PUT | `/api/v1/allocations/{id}` | Modify an allocation's period or percentage | Manager |
 | POST | `/api/v1/allocations/{id}/cancel` | Cancel an allocation | Manager |
+
+The Cancel transition is defined in `11-state-diagrams.md`, Section 2.
 
 ### Time Management
 
@@ -84,6 +90,8 @@ Login itself is handled entirely by Keycloak, via the OIDC Authorization Code fl
 | PUT | `/api/v1/timesheets/{id}/time-entries/{entryId}` | Edit a time entry | Employee |
 | POST | `/api/v1/timesheets/{id}/submit` | Submit a timesheet | Employee |
 
+The Submit transition (Draft → Submitted) is defined in `11-state-diagrams.md`, Section 3.
+
 ### Approval Workflow
 
 | Method | URL | Purpose | Required Role(s) |
@@ -91,7 +99,7 @@ Login itself is handled entirely by Keycloak, via the OIDC Authorization Code fl
 | POST | `/api/v1/timesheets/{id}/approve` | Approve a timesheet | Manager |
 | POST | `/api/v1/timesheets/{id}/reject` | Reject a timesheet (reason required) | Manager |
 
-Approval Workflow has no `GET` endpoint of its own — reviewing a Timesheet is the same `GET /api/v1/timesheets/{id}` Time Management already exposes; Approval Workflow adds only the two decisions, matching `03-module-design.md`'s command/query split exactly (Section 4: exactly one cross-module command in the whole system, and this is it).
+Approval Workflow has no `GET` endpoint of its own — reviewing a Timesheet is the same `GET /api/v1/timesheets/{id}` Time Management already exposes; Approval Workflow adds only the two decisions, matching `03-module-design.md`'s command/query split exactly (Section 4: exactly one cross-module command in the whole system, and this is it). Both the Approve and Reject transitions (Submitted → Approved, Submitted → Draft) are defined in `11-state-diagrams.md`, Section 3.
 
 ### Dashboard
 
