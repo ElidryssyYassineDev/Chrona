@@ -179,3 +179,179 @@ sequenceDiagram
         WA-->>Mgr: Rejected — capacity exceeded
     end
 ```
+
+---
+
+### Timesheet Creation
+
+- **Goal:** Open a new reporting period's Timesheet, ready to receive Time Entries.
+- **Participants:** Employee, Time Management.
+- **Preconditions:** None beyond authentication — a Timesheet doesn't require an existing Allocation to be created (`04-use-cases.md`, Create Timesheet).
+- **Trigger:** A new reporting period begins, or the Employee chooses to start logging time for one.
+- **Main Flow:**
+  1. The Employee opens a new Timesheet for a reporting period (Create Timesheet).
+  2. Time Management creates it in Draft status (`06-domain-model.md`, Section 3).
+- **Alternative Flows:**
+  - A Timesheet already exists for that Employee and period: the existing one is reused rather than duplicated (`04-use-cases.md`, Create Timesheet).
+- **Business Rules Involved:** A Timesheet's initial state is Draft (`11-state-diagrams.md`, Section 3 — `[*] --> Draft`).
+- **Postconditions:** A Draft Timesheet exists for the period, ready to receive Time Entries.
+
+This process is a single step end to end — no diagram earns its place here that the prose doesn't already say more plainly, matching Project Creation earlier in this document.
+
+---
+
+### Time Entry Recording
+
+- **Goal:** Record hours worked on a specific date against a specific Allocation.
+- **Participants:** Employee, Time Management, Work Allocation (validates the Allocation).
+- **Preconditions:** A Draft Timesheet exists for the period; the referenced Allocation exists and is active.
+- **Trigger:** The Employee has worked time to record.
+- **Main Flow:**
+  1. The Employee selects an Allocation and enters hours worked on a date (Add Time Entry).
+  2. Time Management confirms the Allocation exists and is active via Work Allocation (`03-module-design.md`, Time Management → Work Allocation).
+  3. Time Management confirms the entry's date falls within both the Allocation's period and the Timesheet's own period — the second half of this check was added when `06-domain-model.md` was revised during `07-er-diagram.md`'s architecture review.
+  4. Time Management adds the Time Entry to the Draft Timesheet.
+- **Alternative Flows:**
+  - The Allocation is not active, or its period doesn't cover the date: rejected.
+  - The date falls outside the Timesheet's own period, even where the Allocation would otherwise allow it: rejected (`06-domain-model.md`, Section 3, as revised).
+  - The Timesheet is not in Draft status: rejected.
+- **Business Rules Involved:** an employee cannot log time outside an active Allocation (`01-system-overview.md`, `06-domain-model.md`); a Time Entry's date must fall within both its Allocation's period and its Timesheet's period (`06-domain-model.md`, Section 3, revised; `07-er-diagram.md`, Section 4).
+- **Postconditions:** The Time Entry is recorded against the Draft Timesheet.
+
+```mermaid
+sequenceDiagram
+    actor Emp as Employee
+    participant TM as Time Management
+    participant WA as Work Allocation
+
+    Emp->>TM: Add Time Entry (Allocation, date, hours)
+    TM->>WA: AllocationExistsAndIsActive(allocationId, date)?
+    WA-->>TM: Active, period covers date
+    TM->>TM: Check date also within Timesheet's own period
+    alt Both checks pass
+        TM->>TM: Add Time Entry (Draft Timesheet)
+        TM-->>Emp: Time Entry recorded
+    else Either check fails
+        TM-->>Emp: Rejected
+    end
+```
+
+---
+
+### Timesheet Submission
+
+- **Goal:** Close a Timesheet to further edits and make it visible to Approval Workflow for a decision.
+- **Participants:** Employee, Time Management.
+- **Preconditions:** The Timesheet is in Draft status and contains at least one Time Entry.
+- **Trigger:** The reporting period has ended, or the Employee is otherwise ready for review.
+- **Main Flow:** See `09-sequence-diagrams.md`, Section 4 (Submit Timesheet) for the full request-to-database sequence — not repeated here. In business-process terms: the Employee submits; Time Management confirms Draft status and at least one Time Entry; the Timesheet transitions to Submitted and records `LastSubmittedAtUtc` (`06-domain-model.md`, Section 3).
+- **Alternative Flows:** an empty Timesheet is rejected; a Timesheet not in Draft status is rejected (`04-use-cases.md`, Submit Timesheet).
+- **Business Rules Involved:** a Timesheet cannot be submitted with zero Time Entries; Draft → Submitted is the only valid transition from here (`11-state-diagrams.md`, Section 3).
+- **Postconditions:** The Timesheet is Submitted and read-only to the Employee until a Manager acts on it.
+
+---
+
+### Timesheet Approval
+
+- **Goal:** Record a Manager's decision that submitted work is correct, and make that decision permanent.
+- **Participants:** Manager, Workforce (authority check), Time Management (status change), Approval Workflow.
+- **Preconditions:** The Timesheet is Submitted; the Manager has authority over the owning Employee; the Manager is not the Timesheet's own Employee.
+- **Trigger:** The Manager has reviewed the Timesheet and finds it correct.
+- **Main Flow:** See `09-sequence-diagrams.md`, Section 5 (Approve Timesheet) for the full sequence — not repeated here. In business-process terms: Approval Workflow confirms authority via Workforce, confirms the Manager isn't approving their own Timesheet, records the decision, and instructs Time Management to mark the Timesheet Approved.
+- **Alternative Flows:** no authority over the Employee is rejected; self-approval is rejected (`04-use-cases.md`, Approve Timesheet).
+- **Business Rules Involved:** manager authority; no self-approval; Approved is terminal and immutable (`06-domain-model.md`, Section 3; `11-state-diagrams.md`, Section 3).
+- **Postconditions:** The Timesheet is Approved and immutable; an Approval record exists.
+
+---
+
+### Timesheet Rejection
+
+- **Goal:** Send a submitted Timesheet back for correction, with a reason.
+- **Participants:** Manager, Workforce (authority check), Time Management (status change), Approval Workflow.
+- **Preconditions:** The Timesheet is Submitted; the Manager has authority over the owning Employee.
+- **Trigger:** The Manager finds an error in the submission.
+- **Main Flow:** See `09-sequence-diagrams.md`, Section 6 (Reject Timesheet) for the full sequence — not repeated here. In business-process terms: Approval Workflow confirms authority, confirms a reason was provided, records the decision, and instructs Time Management to reopen the Timesheet to Draft.
+- **Alternative Flows:** no reason given is rejected; no authority over the Employee is rejected (`04-use-cases.md`, Reject Timesheet).
+- **Business Rules Involved:** a reason is mandatory for rejection; Submitted → Draft is the only backward transition in the entire domain model (`06-domain-model.md`, Section 8; `11-state-diagrams.md`, Section 3).
+- **Postconditions:** The Timesheet is back in Draft; the Employee can Edit Time Entries and Submit again — closing the loop back into "Doing and Recording Work" that Section 2's overview diagram already showed.
+
+---
+
+### Dashboard Refresh
+
+- **Goal:** Give a Manager a current, accurate view across five other modules, without Dashboard owning any of that data itself.
+- **Participants:** Manager, Dashboard, and every module it queries — Workforce, Project Management, Work Allocation, Time Management, Approval Workflow.
+- **Preconditions:** None beyond authentication as a Manager.
+- **Trigger:** The Manager opens the dashboard, or any of its three views (`04-use-cases.md`).
+- **Main Flow:**
+  1. The Manager requests the dashboard, utilization, or pending-approvals view.
+  2. Dashboard queries each relevant module directly — never a cached or precomputed copy. An event-driven refresh was considered and explicitly rejected as solving a problem the system doesn't have (`03-module-design.md`, Section 5).
+  3. Dashboard assembles the response from live query results and returns it.
+- **Alternative Flows:** one of the underlying modules is unavailable: the affected panel shows a clear "unavailable" state rather than a stale or silently incorrect number (`04-use-cases.md`, View Dashboard).
+- **Business Rules Involved:** Dashboard never owns business data (`03-module-design.md`, Dependency Rule 1); every number shown is a live query, never a duplicate (`06-domain-model.md`, Section 9 — Dashboard queries live in v1).
+- **Postconditions:** None — the one process in this document that changes nothing; it only reads.
+
+```mermaid
+sequenceDiagram
+    actor Mgr as Manager
+    participant Dash as Dashboard
+    participant WF as Workforce
+    participant PM as Project Management
+    participant WA as Work Allocation
+    participant TM as Time Management
+    participant AW as Approval Workflow
+
+    Mgr->>Dash: Request dashboard / utilization / pending approvals
+    Dash->>WF: Query (names, departments)
+    Dash->>PM: Query (active projects)
+    Dash->>WA: Query (allocations, planned capacity)
+    Dash->>TM: Query (actual hours, submitted timesheets)
+    Dash->>AW: Query (pending / decided counts)
+    Dash-->>Mgr: Assembled view
+```
+
+---
+
+## 4. Cross-Process Business Rules
+
+`06-domain-model.md`, Section 8 already pulled the domain-level invariants together by kind. This section is the same exercise at the process level — which rules show up across more than one of the ten processes above, not within just one.
+
+- **Existence-and-activity validation, at the moment of reference:** Project Member Assignment (validates the Employee), Employee Allocation (validates the Employee and the Project), and Time Entry Recording (validates the Allocation) all apply the identical pattern — confirm a cross-aggregate reference is real and active right now, never on a schedule (`06-domain-model.md`, Section 8, Pattern 1).
+- **Manager authority, checked fresh every time:** Timesheet Approval and Timesheet Rejection both open with the identical check — does this Manager have authority over this Employee — via the same Workforce capability, `IsManagerOf` (`03-module-design.md`). Neither process, nor any other, caches or reuses a prior authority result.
+- **Immutability after a terminal state:** Employee Allocation's Cancel path, Project's Archive, and Timesheet Approval's Approved outcome all share the same shape — once reached, the record stays fully readable but closed to further change (`06-domain-model.md`, Section 8, Pattern 3; `11-state-diagrams.md`).
+- **Draft-only mutation:** Time Entry Recording requires its owning Timesheet to be in Draft — the same precondition that governs Edit Time Entry, since both touch the same aggregate under the same rule (`06-domain-model.md`, Section 3).
+
+---
+
+## 5. Failure Scenarios
+
+| Failure | Where it applies | System response |
+|---|---|---|
+| Acting on a resource in the wrong state (submitting an already-Submitted Timesheet, approving a Draft one) | Timesheet Submission, Timesheet Approval, Timesheet Rejection | Rejected — only the transitions `11-state-diagrams.md` defines for that entity are valid. |
+| Referencing an inactive or nonexistent Employee, Project, or Allocation | Project Member Assignment, Employee Allocation, Time Entry Recording | Rejected before any further processing — existence-and-activity is always checked first (Section 4). |
+| A Time Entry's date falling outside its Allocation's period, its Timesheet's period, or both | Time Entry Recording | Rejected — both checks are independent; either one failing is sufficient (`06-domain-model.md`, Section 3, as revised). |
+| A Manager acting without authority over the Employee in question | Timesheet Approval, Timesheet Rejection | Rejected — checked fresh against Workforce every time (Section 4). |
+| A Manager attempting to approve or reject their own Timesheet | Timesheet Approval, Timesheet Rejection | Rejected outright, regardless of authority (`06-domain-model.md`, Section 3). |
+| A Timesheet submitted with zero Time Entries | Timesheet Submission | Rejected (`04-use-cases.md`, Submit Timesheet). |
+| A Timesheet rejected with no reason given | Timesheet Rejection | Rejected — a reason is mandatory for a rejection, though not for an approval (`06-domain-model.md`, Section 3). |
+| One of Dashboard's underlying modules is unavailable | Dashboard Refresh | The affected panel shows an explicit "unavailable" state — never a stale or silently incorrect number (`04-use-cases.md`, View Dashboard). |
+
+---
+
+## 6. Design Decisions
+
+### Decisions made
+
+- Timesheet Submission, Approval, and Rejection cross-reference `09-sequence-diagrams.md` for their sequence diagrams rather than duplicating one — those three were already diagrammed there, in full-stack detail, after this document was originally started, and redrawing them here risked the same kind of diagram-disagreement flagged in the most recent cross-document review.
+- Time Entry Recording's business rules and diagram reflect the cross-period invariant added during `07-er-diagram.md`'s architecture review — this document is now consistent with that revision, not the earlier version of `06-domain-model.md` it predates.
+- Dashboard Refresh is documented as a pure fan-out to five modules with no caching, consistent with `03-module-design.md`'s explicit rejection of an event-driven refresh as solving a problem the system doesn't have.
+
+### Open Questions
+
+None new from this closing set — every process above was derivable from decisions already made in `06`–`09`.
+
+### Deferred to v2
+
+- Dashboard caching: not implemented, per `03-module-design.md`, Section 5 — revisit only if and when live queries prove too slow, not before.
+
+05-business-processes.md complete.

@@ -231,7 +231,7 @@ A domain service holds business logic that doesn't belong to any single aggregat
 
 - **Belongs to:** Workforce.
 - **Responsibility:** given two Employees, determine whether the first has management authority over the second.
-- **Why it's a service, not a method on Employee:** authority isn't a property of one Employee record in isolation — it's a relationship between two, and in principle a chain of them if a reporting hierarchy is ever more than one level deep (`04-use-cases.md`, Open Questions — v1 hasn't yet decided whether it needs to be).
+- **Why it's a service, not a method on Employee:** authority isn't a property of one Employee record in isolation — it's a relationship between two separate Employee records, which is exactly what a domain service is for. Chrona v1 uses a single direct-manager hierarchy — every Employee has at most one Manager, and authority is a direct comparison, not a traversal.
 - **Used by:** `IsManagerOf`, the capability Workforce exposes to Approval Workflow (`03-module-design.md`), and Review Timesheet / Approve Timesheet / Reject Timesheet (`04-use-cases.md`).
 
 ---
@@ -292,12 +292,12 @@ Every authorization-flavored invariant is enforced by whichever aggregate or ser
 - Project Membership and Employee Allocation are modeled as independent: Allocation's invariants (Section 3) do not require the Employee to already be a Project Member. An Employee can be allocated to a Project without formal membership, and can be a Member without ever being allocated.
 - A Timesheet's "pending" state is derived by comparing timestamps — most recent submission versus most recent decision — rather than stored as its own status value, avoiding the need for a version number or a fourth `TimesheetStatus`.
 - Rejection is modeled as a transition back to Draft, not as a distinct `TimesheetStatus` value — the rejection fact and reason live entirely in `Approval`, consistent with `03-module-design.md`'s module boundaries.
+- Chrona v1 uses a single direct-manager hierarchy — every Employee has at most one Manager, and `Employee.ManagerId` alone is sufficient for Manager Authority Resolver; no chain traversal is needed (`03-module-design.md`).
 
 ### Open Questions
 
 - Should Employee Allocation actually require prior Project Membership as a precondition? The model as designed treats them as independent (see Decisions above) — worth explicit confirmation, since it's easy to assume the opposite.
 - Should `TimesheetPeriod` enforce a specific length (e.g., exactly one week), or stay open-ended as currently modeled? (Carried forward from Section 5.)
-- How deep does the manager/reporting hierarchy need to go — a single level, or an arbitrary chain? Affects whether `Employee.ManagerId` alone is sufficient or whether Manager Authority Resolver needs real traversal logic. (Carried forward from `04-use-cases.md`.)
 - Should `Timesheet` gain its own structured history entity, symmetrical to `AllocationHistory`, or does the combination of its `TimeEntry` records and status remain sufficient in v1?
 
 ### Deferred to v2

@@ -203,11 +203,11 @@ If Chrona ever grew well beyond a single small deployment, the module boundaries
 - Workforce owns the principal-to-Employee mapping and the manager/employee reporting relationship; no other module duplicates either.
 - All v1 cross-module collaboration is synchronous, in-process Application Service calls, with domain events reserved for genuine fire-and-forget reactions.
 - Dashboard is a pure, read-only consumer of every other module; nothing depends on it, and it owns no data of its own.
+- Chrona v1 uses a single direct-manager hierarchy — every Employee has at most one Manager, and manager authority is a direct comparison, not a traversal of a reporting chain.
 
 ### Open Questions
 
 - Should `ICurrentUserContext` also expose the resolved `EmployeeId`, or should every module that needs it query Workforce independently, as designed here? This document chose the latter for simplicity; revisit only if identity-resolution calls become a measurable, repeated cost.
-- Does Approval Workflow need a general, multi-level reporting hierarchy from Workforce, or is a single manager per employee sufficient for v1? `16-business-rules.md` should settle this before Time Management or Approval Workflow are implemented.
 - Should Time Management validate against Work Allocation per time entry, or once per timesheet submission? Affects performance and API shape — belongs in `14-api-design.md` or the domain model, not here.
 
 ### Deferred to v2

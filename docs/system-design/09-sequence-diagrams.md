@@ -42,7 +42,7 @@ sequenceDiagram
     Keycloak-->>Frontend: Redirect back with authorization code
     Frontend->>Keycloak: Exchange code for tokens (PKCE verifier)
     Keycloak-->>Frontend: Access token, ID token
-    Frontend->>API: GET /me (Bearer access token)
+    Frontend->>API: GET /api/v1/employees/me (Bearer access token)
     API->>API: Validate JWT (signature, issuer, audience, expiry)
     API->>Workforce: GetEmployeeForPrincipal(subjectId)
     Workforce->>DB: SELECT employee WHERE keycloak_subject_id = ...
@@ -247,8 +247,8 @@ sequenceDiagram
     API->>API: Validate JWT, authorize Manager role
     API->>AW: ApproveTimesheetCommand
     AW->>WF: IsManagerOf(managerId, employeeId)?
-    WF->>DB: SELECT employee, walk manager chain
-    DB-->>WF: Confirmed manager
+    WF->>DB: SELECT employee, compare ManagerId
+    DB-->>WF: Confirmed direct manager
     WF-->>AW: Authorized
     AW->>AW: Check: Manager is not the Timesheet's own Employee
     alt Authorized and not self
@@ -321,8 +321,8 @@ sequenceDiagram
     API->>API: Validate JWT, authorize Manager role
     API->>AW: RejectTimesheetCommand(reason)
     AW->>WF: IsManagerOf(managerId, employeeId)?
-    WF->>DB: SELECT employee, walk manager chain
-    DB-->>WF: Confirmed manager
+    WF->>DB: SELECT employee, compare ManagerId
+    DB-->>WF: Confirmed direct manager
     WF-->>AW: Authorized
     AW->>AW: Check: reason provided
     alt Authorized and reason provided
