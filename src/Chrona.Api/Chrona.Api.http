@@ -1,0 +1,6 @@
+@Chrona.Api_HostAddress = http://localhost:5294
+
+GET {{Chrona.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
