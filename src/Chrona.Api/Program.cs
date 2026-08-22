@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
+using Workforce.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     } );
 builder.Services.AddAuthorization();
+
+builder.Services.AddDbContext<WorkforceDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Chrona")));
 
 var app = builder.Build();
 
