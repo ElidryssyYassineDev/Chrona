@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Chrona.Api/Chrona.Api.csproj" />
+    <Project Path="src/Chrona.Modules.Workforce/Workforce.csproj" />
     <Project Path="src/Chrona.Shared/Chrona.Shared.csproj" />
-    <Project Path="src/Workforce/Workforce.csproj" />
   </Folder>
 </Solution>

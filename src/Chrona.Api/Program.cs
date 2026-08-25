@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using Chrona.Api.Infrastructure;
+using Chrona.Shared.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +27,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<WorkforceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Chrona")));
 
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -37,7 +43,12 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/api/v1/employees/me", () => "Authenticated!").RequireAuthorization();
+app.MapGet("/api/v1/employees/me", (ICurrentUserContext currentUserContext) =>
+    new 
+    {
+        currentUserContext.SubjectId, 
+        currentUserContext.Roles})
+.RequireAuthorization();
 app.MapGet("/health", () =>
 {
     return "healthy";
