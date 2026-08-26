@@ -4,6 +4,7 @@ using Chrona.Shared.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Workforce.Domain;
 using Workforce.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,16 +44,40 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/api/v1/employees/me", (ICurrentUserContext currentUserContext) =>
-    new 
+app.MapGet("/api/v1/employees/me", async (ICurrentUserContext currentUser, WorkforceDbContext db) =>
     {
-        currentUserContext.SubjectId, 
-        currentUserContext.Roles})
+        var employee = await db.Employees.FirstOrDefaultAsync(e => e.KeycloakSubjectId == currentUser.SubjectId);
+        if (employee is null)
+        {
+            return Results.NotFound(new {message = "No employee record exists for this account"});
+        }
+        return Results.Ok(new
+        {
+            employee.Id,
+            employee.FirstName,
+            employee.LastName,
+            employee.IsActive
+        });
+    }
+        )
 .RequireAuthorization();
 app.MapGet("/health", () =>
 {
     return "healthy";
 });
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
+    var mySubjectId = Guid.Parse("0c2d071b-8303-4819-abd1-22ea9c763e89"
+);
+    if (!await db.Employees.AnyAsync(e => e.KeycloakSubjectId == mySubjectId))
+    {
+        var me = new Employee(mySubjectId, "yassine", "elidryssy", Guid.NewGuid());
+        db.Employees.Add(me);
+        await db.SaveChangesAsync();
+    }
+}
 
 
 app.Run();
