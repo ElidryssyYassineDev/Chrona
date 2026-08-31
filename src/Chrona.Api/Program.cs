@@ -16,12 +16,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "http://localhost:8080/realms/chrona";
+        options.Authority = "http://keycloak:8080/realms/chrona";
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            ValidIssuer = "http://localhost:8080/realms/chrona",
             ValidAudience = "React-SPA"
         };
+        options.MetadataAddress = "http://keycloak:8080/realms/chrona/.well-known/openid-configuration";
     } );
 builder.Services.AddAuthorization();
 

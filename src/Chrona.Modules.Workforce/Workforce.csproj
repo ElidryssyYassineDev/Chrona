@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\chrona.shared\chrona.shared.csproj" />
+    <ProjectReference Include="..\Chrona.Shared\Chrona.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

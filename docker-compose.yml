@@ -31,6 +31,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy 
+  backend:
+    build:
+      context: .
+      dockerfile: src/Chrona.Api/Dockerfile
+    environment:
+      - ConnectionStrings__Chrona=Host=postgres;Port=5432;Database=chrona;Username=keycloak;Password=keycloakAdmin
+    depends_on:
+      - postgres
+      - keycloak
+    ports:
+      - "5294:8080"
 
 volumes:
   postgres_data:
