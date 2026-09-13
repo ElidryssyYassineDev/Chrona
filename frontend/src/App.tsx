@@ -24,10 +24,11 @@ function App() {
 
     const fetchEmployee = async ()=>{
       setStatus('loading');
-      const accessToken = 'garbage';
+      const accessToken = auth.user?.access_token;
+      const apiUrl = import.meta.env.VITE_API_URL;
       try {
         const response = await fetch(
-          'http://localhost:5294/api/v1/employees/me',
+          `${apiUrl}/api/v1/employees/me`,
           {
             headers:{
             Authorization: `Bearer ${accessToken}`,
