@@ -21,6 +21,7 @@ function App() {
     if(!auth.isAuthenticated){
       return;
     }
+    
 
     const fetchEmployee = async ()=>{
       setStatus('loading');
@@ -89,6 +90,7 @@ function App() {
           <h1>{employee.firstName} {employee.lastName}</h1>
           <p>ID: {employee.id}</p>
           <p>Active: {employee.isActive ? 'Yes' : 'No'}</p>
+          <button onClick={()=> auth.signoutRedirect()}>Logout</button>
         </div>
       ) : null}
       </section>
