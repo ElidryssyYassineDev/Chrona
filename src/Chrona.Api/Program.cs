@@ -1,9 +1,9 @@
-using System.ComponentModel;
 using Chrona.Api.Infrastructure;
 using Chrona.Shared.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Workforce.Application.Employees.GetEmployeeForPrincipal;
 using Workforce.Domain;
 using Workforce.Infrastructure;
 
@@ -43,6 +43,7 @@ builder.Services.AddDbContext<WorkforceDbContext>(options =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+builder.Services.AddScoped<GetEmployeeForPrincipalHandler>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -58,9 +59,15 @@ app.UseCors("AllowSpa");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/api/v1/employees/me", async (ICurrentUserContext currentUser, WorkforceDbContext db) =>
+app.MapGet(
+    "/api/v1/employees/me", 
+    async (
+        ICurrentUserContext currentUser, 
+        GetEmployeeForPrincipalHandler handler) =>
     {
-        var employee = await db.Employees.FirstOrDefaultAsync(e => e.KeycloakSubjectId == currentUser.SubjectId);
+        var query = new GetEmployeeForPrincipalQuery(currentUser.SubjectId);
+
+        var employee = await handler.HandleAsync(query);
         if (employee is null)
         {
             return Results.NotFound(new {message = "No employee record exists for this account"});
