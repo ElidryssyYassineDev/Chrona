@@ -38,7 +38,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<WorkforceDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Chrona")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Chrona"))
+        .UseSnakeCaseNamingConvention());
 
 
 builder.Services.AddHttpContextAccessor();
