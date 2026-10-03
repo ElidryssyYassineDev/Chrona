@@ -1,14 +1,15 @@
 namespace Chrona.Shared.Domain;
+
 public abstract class Entity
 {
-    public Guid Id {get; protected set;}
+    public Guid Id { get; protected set; }
 
     protected Entity()
     {
         //parameterless constuctor
     }
 
-    public Entity (Guid id)
+    protected Entity(Guid id)
     {
         this.Id = id;
     }
@@ -37,7 +38,7 @@ public abstract class Entity
     {
         return HashCode.Combine(Id);
     }
-    
+
     public static bool operator ==(Entity left, Entity right)
     {
         if (ReferenceEquals(left, right))

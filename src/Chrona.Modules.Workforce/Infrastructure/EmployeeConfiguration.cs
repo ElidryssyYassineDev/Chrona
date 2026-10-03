@@ -13,5 +13,5 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.HasIndex(e => e.KeycloakSubjectId).IsUnique();
 
     }
-    
+
 }

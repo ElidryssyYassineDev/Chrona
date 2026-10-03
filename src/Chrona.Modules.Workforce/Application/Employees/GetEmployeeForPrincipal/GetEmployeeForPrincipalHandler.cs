@@ -7,10 +7,10 @@ using Workforce.Infrastructure;
 namespace Workforce.Application.Employees.GetEmployeeForPrincipal;
 
 public sealed class GetEmployeeForPrincipalHandler
-    :IQueryHandler<GetEmployeeForPrincipalQuery, Employee?>
+    : IQueryHandler<GetEmployeeForPrincipalQuery, Employee?>
 {
     private readonly WorkforceDbContext _db;
-    
+
     public GetEmployeeForPrincipalHandler(WorkforceDbContext db)
     {
         _db = db;
