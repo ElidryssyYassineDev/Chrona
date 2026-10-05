@@ -3,6 +3,8 @@ namespace Chrona.Shared.Domain;
 public abstract class Entity
 {
     public Guid Id { get; protected set; }
+    private readonly List<IDomainEvent> _domainEvents = [];
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     protected Entity()
     {
@@ -12,6 +14,17 @@ public abstract class Entity
     protected Entity(Guid id)
     {
         this.Id = id;
+    }
+
+    protected void AddDomainEvent(IDomainEvent domainEvent)
+    {
+        if (domainEvent is null) throw new ArgumentNullException(nameof(domainEvent));
+        _domainEvents.Add(domainEvent);
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 
     public override bool Equals(object? obj)

@@ -17,20 +17,86 @@ public class Employee : Entity
     public Employee(Guid keycloakSubjectId,
                      string firstName,
                      string lastName,
-                     Guid departmentId)
+                     Guid departmentId) : base(Guid.NewGuid())
     {
-        this.KeycloakSubjectId = keycloakSubjectId;
-        this.FirstName = firstName;
-        this.LastName = lastName;
-        this.DepartmentId = departmentId;
+        if (keycloakSubjectId == Guid.Empty)
+        {
+            throw new ArgumentException("Keycloak subject ID cannot be empty.", nameof(keycloakSubjectId));
+        }
 
+        if (string.IsNullOrWhiteSpace(firstName))
+        {
+            throw new ArgumentException("First name cannot be empty or whitespace.", nameof(firstName));
+        }
+
+        if (string.IsNullOrWhiteSpace(lastName))
+        {
+            throw new ArgumentException("Last name cannot be empty or whitespace.", nameof(lastName));
+        }
+
+        if (departmentId == Guid.Empty)
+        {
+            throw new ArgumentException("Department ID cannot be empty", nameof(departmentId));
+        }
+
+        KeycloakSubjectId = keycloakSubjectId;
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        DepartmentId = departmentId;
         IsActive = true;
-        CreatedAtUtc = DateTime.UtcNow;
+        CreatedAtUtc = DateTimeOffset.UtcNow;
     }
 
     public void Deactivate()
     {
+        if (!IsActive){
+            return;
+        }
         IsActive = false;
         DeactivatedAtUtc = DateTimeOffset.UtcNow;
+        AddDomainEvent(new EmployeeDeactivated(Id, DeactivatedAtUtc.Value));
+    }
+
+    public void ChangeDepartment(Guid newDepartmentId){
+        if (newDepartmentId == Guid.Empty){
+            throw new ArgumentException(
+                "Department ID cannot be empty", nameof(newDepartmentId));
+        }
+        if (newDepartmentId == DepartmentId){
+            return;
+        }
+
+        DepartmentId = newDepartmentId;
+    }
+    
+    public void AssignManager(Guid? managerId){
+        if (managerId == Guid.Empty){
+            throw new ArgumentException("Manager ID cannot be empty.", nameof(managerId));
+        }
+        if (managerId == Id){
+            throw new InvalidOperationException("An employee cannot be their own manager.");
+        }
+
+        if (managerId == ManagerId){
+            return;
+        }
+
+        ManagerId = managerId;
+    }
+
+    public void UpdateName(string firstName, string lastName)
+    {
+        if (string.IsNullOrWhiteSpace(firstName))
+        {
+            throw new ArgumentException(
+                "First name cannot be empty or whitespace.", nameof(firstName));
+        }
+        if (string.IsNullOrWhiteSpace(lastName))
+        {
+            throw new ArgumentException(
+                "Last name cannot be empty or whitespace.", nameof(lastName));
+        }
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
     }
 }

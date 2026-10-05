@@ -15,12 +15,6 @@ public class Department : Entity
         CreatedAtUtc = DateTimeOffset.UtcNow;
     }
 
-    public Department(Guid id, string name) : base(id)
-    {
-        ValidateAndSetName(name);
-        CreatedAtUtc = DateTimeOffset.UtcNow;
-    }
-
     public void Rename(string newName)
     {
         ValidateAndSetName(newName);

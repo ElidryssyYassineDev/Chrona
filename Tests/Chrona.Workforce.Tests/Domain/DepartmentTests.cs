@@ -23,21 +23,6 @@ public class DepartmentTests
     }
 
     [Fact]
-    public void Create_WithExplicitId_ShouldSetProvidedId()
-    {
-        // Arrange
-        var customId = Guid.NewGuid();
-        const string name = "Design";
-
-        // Act
-        var department = new Department(customId, name);
-
-        // Assert
-        Assert.Equal(customId, department.Id);
-        Assert.Equal(name, department.Name);
-    }
-
-    [Fact]
     public void Create_WithNullName_ShouldThrowArgumentException()
     {
         // Act & Assert
