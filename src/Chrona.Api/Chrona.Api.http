@@ -1,6 +1,33 @@
-@Chrona.Api_HostAddress = http://localhost:5294
+@host = http://localhost:5294
+# Collez un access_token : DevTools > Application > Session Storage > oidc.user:... > access_token
+@token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJZcjA5S0dFVlVwZUljN2Uta0VVeEIwdTBfQkFHVFBTenZwYmNHLU4xUVhvIn0.eyJleHAiOjE3OTIxMTAyNDYsImlhdCI6MTc5MjEwOTk0NiwiYXV0aF90aW1lIjoxNzkyMTA5OTQ2LCJqdGkiOiJvbnJ0YWM6MmM1NjA4MTItNDU3Yy1kZWYwLTNlZTMtOWI4MDgxYmJlYTg3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9jaHJvbmEiLCJhdWQiOiJSZWFjdC1TUEEiLCJzdWIiOiJmNmVjN2YwNi04M2VlLTQ3YjQtYjdlNC1iNDk0YjQyMzFlOTkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJSZWFjdC1TUEEiLCJzaWQiOiJHbHgtVjBNNEZEajViU0lnQW1Vam9acUoiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6NTE3MyJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiRW1wbG95ZWUiLCJNYW5hZ2VyIl19LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJ5YXNlZW4gaWRyeXNzeSIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3QtdXNlciIsImdpdmVuX25hbWUiOiJ5YXNlZW4iLCJmYW1pbHlfbmFtZSI6Imlkcnlzc3kiLCJlbWFpbCI6Inlhc3NpbmVpZHJ5c3N5QGdtYWlsLmNvbSJ9.fVW7B8bLCLjdOIiCa1VH-lHjK7G_OfTPLWo0ufKmrhPENS_cL1i-I0Yp7OJvY6Pb5yiLanaBlMe5QVEEim2rqbTT9cQ8yK7v6fc5rO_CAemUCxf1CSppfbvKN-EJGDEzyk8_WCrQAkdNEQZbXQiz76bqe8bwRzek0KJhyfbQCRKLhPQDtW4V7i7lxxAgItTCcToS-c2S5uAJwRpPeA-xiIw-EyzsidQzRBQEnRG8STv-gZs7fxtNoTIH6-wm2zFaO-ejzanbCMsYrnD2lbyWzo129qP3Htng7mHvUB1rWJPnwhJHkg7ru1hUD--hluF_fth27LIxXR-x4YUeYjjONQ"
+@deptId = PASTE_A_DEPARTMENT_ID_HERE
 
-GET {{Chrona.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Lister les départements
+GET {{host}}/api/v1/departments
+Authorization: Bearer {{token}}
 
-###
+### Créer un département
+POST {{host}}/api/v1/departments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Engineering" }
+
+### Nom vide -> 400
+POST {{host}}/api/v1/departments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "   " }
+
+### Renommer
+PUT {{host}}/api/v1/departments/{{deptId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Platform Engineering" }
+
+### Supprimer
+DELETE {{host}}/api/v1/departments/{{deptId}}
+Authorization: Bearer {{token}}
