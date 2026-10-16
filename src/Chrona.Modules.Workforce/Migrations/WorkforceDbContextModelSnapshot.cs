@@ -95,11 +95,36 @@ namespace Workforce.Migrations
                     b.HasKey("Id")
                         .HasName("pk_employees");
 
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_employees_department_id");
+
                     b.HasIndex("KeycloakSubjectId")
                         .IsUnique()
-                        .HasDatabaseName("ix_employees_keycloak_subject_id");
+                        .HasDatabaseName("uk_employees_keycloak_subject_id");
 
-                    b.ToTable("employees", (string)null);
+                    b.HasIndex("ManagerId")
+                        .HasDatabaseName("ix_employees_manager_id");
+
+                    b.ToTable("employees", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_employees_deactivated_at_consistency", "is_active = true OR deactivated_at_utc IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("Workforce.Domain.Employee", b =>
+                {
+                    b.HasOne("Workforce.Domain.Department", null)
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_employees_department_id");
+
+                    b.HasOne("Workforce.Domain.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_employees_manager_id");
                 });
 #pragma warning restore 612, 618
         }

@@ -4,10 +4,10 @@ namespace Workforce.Domain;
 
 public class Department : Entity
 {
-    public string Name { get; protected set; } = string.Empty;
-    public DateTimeOffset CreatedAtUtc { get; protected set; }
+    public string Name { get; private set; } = string.Empty;
+    public DateTimeOffset CreatedAtUtc { get; private set; }
 
-    private Department() { } // EF Core materialization only
+    private Department() { } // Réservé à la matérialisation par EF Core
 
     public Department(string name) : base(Guid.NewGuid())
     {
@@ -15,10 +15,7 @@ public class Department : Entity
         CreatedAtUtc = DateTimeOffset.UtcNow;
     }
 
-    public void Rename(string newName)
-    {
-        ValidateAndSetName(newName);
-    }
+    public void Rename(string newName) => ValidateAndSetName(newName);
 
     private void ValidateAndSetName(string name)
     {

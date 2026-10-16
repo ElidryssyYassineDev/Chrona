@@ -37,9 +37,14 @@ services:
       dockerfile: src/Chrona.Api/Dockerfile
     environment:
       - ConnectionStrings__Chrona=Host=postgres;Port=5432;Database=chrona;Username=keycloak;Password=keycloakAdmin
+      - Seed__AdminSubjectId=f6ec7f06-83ee-47b4-b7e4-b494b4231e99
+      - Seed__FirstName=yassine
+      - Seed__LastName=elidryssy
     depends_on:
-      - postgres
-      - keycloak
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
     ports:
       - "5294:8080"
   frontend:
