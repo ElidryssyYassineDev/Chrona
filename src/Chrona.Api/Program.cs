@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Workforce;
-using Workforce.Application.Employees.GetEmployeeForPrincipal;
 using Workforce.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,27 +57,8 @@ app.UseCors("AllowSpa");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet(
-    "/api/v1/employees/me",
-    async (ICurrentUserContext currentUser, GetEmployeeForPrincipalHandler handler) =>
-    {
-        var employee = await handler.HandleAsync(new GetEmployeeForPrincipalQuery(currentUser.SubjectId));
-        if (employee is null)
-        {
-            return Results.NotFound(new { message = "No employee record exists for this account" });
-        }
-
-        return Results.Ok(new
-        {
-            employee.Id,
-            employee.FirstName,
-            employee.LastName,
-            employee.IsActive
-        });
-    })
-    .RequireAuthorization();
-
 app.MapDepartmentEndpoints();
+app.MapEmployeeEndpoints();
 
 app.MapGet("/health", () => "healthy");
 
