@@ -1,99 +1,87 @@
 import './App.css'
+import { useState } from 'react'
 import { useAuth } from 'react-oidc-context'
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useQuery } from './api/useQuery'
+import type { MyProfile } from './api/types'
+import { DepartmentsPage } from './pages/DepartmentsPage'
+import { EmployeesPage } from './pages/EmployeesPage'
+import { ProfilePage } from './pages/ProfilePage'
 
-interface Employee {
-  id: string
-  firstName: string
-  lastName: string
-  isActive: boolean
-}
+type Page = 'profile' | 'employees' | 'departments'
 
 function App() {
-  const auth                    = useAuth();
-  const [employee, setEmployee] = useState<Employee | null>(null);
-  const [status, setStatus]     = useState<'idle' | 'loading' | 'success' | 'unauthorized' | 'notFound' | 'error'>('idle');
-  const [error, setError]       = useState<string | null>(null);
-  console.log(auth.user);
+  const auth = useAuth()
 
-  useEffect(()=>{
-    if(!auth.isAuthenticated){
-      return;
-    }
-    
+  if (auth.isLoading) return <p className="center">Loading...</p>
 
-    const fetchEmployee = async ()=>{
-      setStatus('loading');
-      const accessToken = auth.user?.access_token;
-      const apiUrl = import.meta.env.VITE_API_URL;
-      try {
-        const response = await fetch(
-          `${apiUrl}/api/v1/employees/me`,
-          {
-            headers:{
-            Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        )
-        //1st edge case: 401 UNAUTHORIZED
-        if(response.status === 401){
-          setStatus("unauthorized")
-          return
-        }
-        //2nd edge case: 404 Not found
-        if (response.status === 404){
-          setStatus("notFound")
-          return
-        }
-        //3rd edge case: generic error
-        if (!response.ok){
-          setStatus("error")
-          setError(`Request failed with status ${response.status}`)
-          return
-        }
-        //happy path
-        const data: Employee = await response.json();
-        setEmployee(data)
-        setStatus('success')
+  if (!auth.isAuthenticated) {
+    return (
+      <div className="center">
+        <h1>Chrona</h1>
+        <button className="primary" onClick={() => auth.signinRedirect()}>
+          Login
+        </button>
+      </div>
+    )
+  }
 
-      } catch (err) {
-        setStatus("error")
-        setError('failed to fetch!')
-      }
-      
+  return <Shell />
+}
 
+function Shell() {
+  const auth = useAuth()
+  const me = useQuery<MyProfile>('/api/v1/employees/me')
+  const [page, setPage] = useState<Page>('profile')
 
-    }
-    fetchEmployee();
-  },[auth.isAuthenticated]);
+  if (me.loading) return <p className="center">Loading employee...</p>
+
+  if (me.error) {
+    const message =
+      me.error.status === 401
+        ? 'Session expired.'
+        : me.error.status === 404
+          ? 'No employee record exists for this account.'
+          : me.error.message
+    return (
+      <div className="center">
+        <p role="alert">{message}</p>
+        <button onClick={() => auth.signoutRedirect()}>Logout</button>
+      </div>
+    )
+  }
+
+  if (!me.data) return null
+
+  const isManager = me.data.roles.includes('Manager')
 
   return (
     <>
-      <section id="center">
-        {auth.isLoading ? (
-        <div>Loading...</div>
-      ) : !auth.isAuthenticated ? (
-        <button onClick={() => auth.signinRedirect()}>
-          Login
-        </button>
-      ) : status === 'loading' ? (
-        <div>Loading employee...</div>
-      ): status === 'unauthorized'? (
-        <div>session expired</div>
-      ): status === 'notFound' ? (
-        <div>No employee record</div>
-      ): status === 'error' ? (
-        <div>{error}</div>
-      ) : employee ? (
-        <div>
-          <h1>{employee.firstName} {employee.lastName}</h1>
-          <p>ID: {employee.id}</p>
-          <p>Active: {employee.isActive ? 'Yes' : 'No'}</p>
-          <button onClick={()=> auth.signoutRedirect()}>Logout</button>
-        </div>
-      ) : null}
-      </section>
+      <header className="topbar">
+        <strong>Chrona</strong>
+        <nav>
+          <button className={page === 'profile' ? 'active' : ''} onClick={() => setPage('profile')}>
+            Profile
+          </button>
+          {isManager && (
+            <>
+              <button className={page === 'employees' ? 'active' : ''} onClick={() => setPage('employees')}>
+                Employees
+              </button>
+              <button className={page === 'departments' ? 'active' : ''} onClick={() => setPage('departments')}>
+                Departments
+              </button>
+            </>
+          )}
+        </nav>
+        <span className="who">{me.data.employee.firstName}</span>
+        <button onClick={() => auth.signoutRedirect()}>Logout</button>
+      </header>
+
+      <main>
+        {page === 'profile' && <ProfilePage profile={me.data} />}
+        {isManager && page === 'employees' && <EmployeesPage />}
+        {isManager && page === 'departments' && <DepartmentsPage />}
+      </main>
     </>
   )
 }
