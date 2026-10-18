@@ -4,6 +4,8 @@ using Chrona.Shared.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ProjectManagement;
+using ProjectManagement.Infrastructure;
 using Workforce;
 using Workforce.Infrastructure;
 
@@ -41,9 +43,11 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
-builder.Services.AddWorkforceModule(
-    builder.Configuration.GetConnectionString("Chrona")
-    ?? throw new InvalidOperationException("ConnectionStrings:Chrona is not configured."));
+var connectionString = builder.Configuration.GetConnectionString("Chrona")
+    ?? throw new InvalidOperationException("ConnectionStrings:Chrona is not configured.");
+
+builder.Services.AddWorkforceModule(connectionString);
+builder.Services.AddProjectManagementModule(connectionString);
 
 var app = builder.Build();
 
@@ -57,21 +61,25 @@ app.UseCors("AllowSpa");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapDepartmentEndpoints();
 app.MapEmployeeEndpoints();
+app.MapDepartmentEndpoints();
+app.MapProjectEndpoints();
 
 app.MapGet("/health", () => "healthy");
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
-    await db.Database.MigrateAsync();
+    var workforceDb = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
+    await workforceDb.Database.MigrateAsync(); // Workforce d'abord : project_members référence employees
+
+    var projectsDb = scope.ServiceProvider.GetRequiredService<ProjectManagementDbContext>();
+    await projectsDb.Database.MigrateAsync();
 
     // Amorçage du premier compte : uniquement si Seed:AdminSubjectId est configuré.
     var seed = app.Configuration.GetSection("Seed");
     if (Guid.TryParse(seed["AdminSubjectId"], out var adminSubjectId))
     {
-        await WorkforceSeeder.SeedAsync(db, adminSubjectId, seed["FirstName"] ?? "Admin", seed["LastName"] ?? "User");
+        await WorkforceSeeder.SeedAsync(workforceDb, adminSubjectId, seed["FirstName"] ?? "Admin", seed["LastName"] ?? "User");
     }
 }
 

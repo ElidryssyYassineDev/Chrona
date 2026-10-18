@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Chrona.Shared\Chrona.Shared.csproj" />
     <ProjectReference Include="..\Chrona.Modules.Workforce\Workforce.csproj" />
+    <ProjectReference Include="..\Chrona.Modules.ProjectManagement\ProjectManagement.csproj" />
   </ItemGroup>
 
 </Project>
