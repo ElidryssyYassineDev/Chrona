@@ -66,6 +66,8 @@ Login itself is handled entirely by Keycloak, via the OIDC Authorization Code fl
 | POST | `/api/v1/projects/{id}/members` | Add a project member | Manager |
 | DELETE | `/api/v1/projects/{id}/members/{employeeId}` | Remove a project member | Manager |
 
+Responses: a project is `{ projectId, name, status, createdAtUtc, archivedAtUtc, memberCount }`; a member is `{ employeeId, employeeName, employeeIsActive, addedAtUtc }` (names resolved through Workforce's contract, never a cross-module join). `POST /archive` returns `200` with the project; `DELETE .../members/{employeeId}` returns `204`. Errors: `400 validation_error` (`employeeId` must reference an existing, active employee), `404 member_not_found`, `409 project_name_taken`, `409 project_archived`, `409 already_a_member`. An archived project rejects every change: rename, archive, and adding or removing members.
+
 The Archive transition is defined in `11-state-diagrams.md`, Section 4.
 
 ### Work Allocation

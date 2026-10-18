@@ -47,6 +47,7 @@ Authentication & Authorization and Dashboard do not appear in Sections 3 or 4 at
 - **Purpose:** represent a piece of work that Employees can be associated with and, later, allocated against.
 - **Aggregate Root:** `Project`
 - **Invariants:** a Project's name must be non-empty and unique (`05-business-processes.md`, Project Creation); an archived Project accepts no new Project Members and no new Allocations, but existing ones are unaffected (`05-business-processes.md`); archiving is permanent in v1 — reactivation is not designed (`04-use-cases.md`, Open Questions).
+An archived Project is frozen: it accepts no rename, no second archive, and no membership change (add or remove). Existing members and Allocations are left untouched. This resolves the question flagged in `05-business-processes.md`, §3 (Project Member Assignment).
 - **Owned Entities:** `ProjectMember`.
 - **Owned Value Objects:** `ProjectStatus` (Active, Archived).
 
