@@ -1,10 +1,12 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Chrona.Api/Chrona.Api.csproj" />
+    <Project Path="src/Chrona.Modules.ProjectManagement/ProjectManagement.csproj" />
     <Project Path="src/Chrona.Modules.Workforce/Workforce.csproj" />
     <Project Path="src/Chrona.Shared/Chrona.Shared.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/Chrona.ProjectManagement.Tests/Chrona.ProjectManagement.Tests.csproj" />
     <Project Path="Tests/Chrona.Shared.Tests/Chrona.Shared.Tests.csproj" />
     <Project Path="Tests/Chrona.Workforce.Tests/Chrona.Workforce.Tests.csproj" />
   </Folder>

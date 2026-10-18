@@ -4,6 +4,7 @@ WORKDIR /src
 COPY ["src/Chrona.Api/Chrona.Api.csproj", "src/Chrona.Api/"]
 COPY ["src/Chrona.Shared/Chrona.Shared.csproj", "src/Chrona.Shared/"]
 COPY ["src/Chrona.Modules.Workforce/Workforce.csproj", "src/Chrona.Modules.Workforce/"]
+COPY ["src/Chrona.Modules.ProjectManagement/ProjectManagement.csproj", "src/Chrona.Modules.ProjectManagement/"]
 
 RUN dotnet restore "src/Chrona.Api/Chrona.Api.csproj"
 
