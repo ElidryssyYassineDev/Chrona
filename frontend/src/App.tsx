@@ -6,8 +6,9 @@ import type { MyProfile } from './api/types'
 import { DepartmentsPage } from './pages/DepartmentsPage'
 import { EmployeesPage } from './pages/EmployeesPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { ProjectsPage } from './pages/ProjectsPage'
 
-type Page = 'profile' | 'employees' | 'departments'
+type Page = 'profile' | 'employees' | 'departments' | 'projects'
 
 function App() {
   const auth = useAuth()
@@ -62,6 +63,10 @@ function Shell() {
           <button className={page === 'profile' ? 'active' : ''} onClick={() => setPage('profile')}>
             Profile
           </button>
+
+             <button className={page === 'projects' ? 'active' : ''} onClick={() => setPage('projects')}>
+                Projects
+             </button>
           {isManager && (
             <>
               <button className={page === 'employees' ? 'active' : ''} onClick={() => setPage('employees')}>
@@ -81,6 +86,7 @@ function Shell() {
         {page === 'profile' && <ProfilePage profile={me.data} />}
         {isManager && page === 'employees' && <EmployeesPage />}
         {isManager && page === 'departments' && <DepartmentsPage />}
+        {page === 'projects' && <ProjectsPage isManager={isManager} />}
       </main>
     </>
   )

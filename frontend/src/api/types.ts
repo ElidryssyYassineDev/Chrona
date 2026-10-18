@@ -22,3 +22,19 @@ export interface MyProfile {
   employee: Employee
   roles: string[]
 }
+
+export interface Project {
+  projectId: string
+  name: string
+  status: 'Active' | 'Archived'
+  createdAtUtc: string
+  archivedAtUtc: string | null
+  memberCount: number
+}
+
+export interface ProjectMember {
+  employeeId: string
+  employeeName: string
+  employeeIsActive: boolean
+  addedAtUtc: string
+}
