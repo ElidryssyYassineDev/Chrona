@@ -11,6 +11,7 @@ using Workforce.Application.Employees.GetEmployeeForPrincipal;
 using Workforce.Application.Employees.GetMyProfile;
 using Workforce.Application.Employees.ListEmployees;
 using Workforce.Application.Employees.UpdateEmployee;
+using Workforce.Contracts;
 using Workforce.Infrastructure;
 
 namespace Workforce;
@@ -36,6 +37,7 @@ public static class WorkforceModule
         services.AddScoped<GetEmployeeHandler>();
         services.AddScoped<ListEmployeesHandler>();
         services.AddScoped<GetMyProfileHandler>();
+        services.AddScoped<IWorkforceQueries, WorkforceQueries>();
 
         return services;
     }
