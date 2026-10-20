@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjectManagement;
 using ProjectManagement.Infrastructure;
+using WorkAllocation;
+using WorkAllocation.Infrastructure;
 using Workforce;
 using Workforce.Infrastructure;
 
@@ -42,12 +44,14 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+builder.Services.AddScoped<IDomainEventPublisher, InProcessDomainEventPublisher>();
 
 var connectionString = builder.Configuration.GetConnectionString("Chrona")
     ?? throw new InvalidOperationException("ConnectionStrings:Chrona is not configured.");
 
 builder.Services.AddWorkforceModule(connectionString);
 builder.Services.AddProjectManagementModule(connectionString);
+builder.Services.AddWorkAllocationModule(connectionString);
 
 var app = builder.Build();
 
@@ -64,18 +68,18 @@ app.UseAuthorization();
 app.MapEmployeeEndpoints();
 app.MapDepartmentEndpoints();
 app.MapProjectEndpoints();
+app.MapAllocationEndpoints();
 
 app.MapGet("/health", () => "healthy");
 
 using (var scope = app.Services.CreateScope())
 {
+    // Ordre imposé par les FK inter-modules : Workforce, puis Project Management, puis Work Allocation.
     var workforceDb = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
-    await workforceDb.Database.MigrateAsync(); // Workforce d'abord : project_members référence employees
+    await workforceDb.Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<ProjectManagementDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<WorkAllocationDbContext>().Database.MigrateAsync();
 
-    var projectsDb = scope.ServiceProvider.GetRequiredService<ProjectManagementDbContext>();
-    await projectsDb.Database.MigrateAsync();
-
-    // Amorçage du premier compte : uniquement si Seed:AdminSubjectId est configuré.
     var seed = app.Configuration.GetSection("Seed");
     if (Guid.TryParse(seed["AdminSubjectId"], out var adminSubjectId))
     {
