@@ -228,6 +228,8 @@ A domain service holds business logic that doesn't belong to any single aggregat
 - **Why it's a service, not a method on Allocation:** a single `Allocation` instance only knows its own period and percentage. Answering "would this exceed capacity" requires the Employee's *other* active Allocations too — data living in different instances of the same aggregate, which is exactly what a domain service is for.
 - **Used by:** Create Allocation and Modify Allocation (`04-use-cases.md`), at the point described in Employee Allocation's main flow (`05-business-processes.md`).
 
+Capacity is evaluated as the peak concurrent load over the proposed period, day by day, with inclusive dates — not as the sum of every overlapping allocation: two successive allocations never add up. Checks for one Employee are serialized with a PostgreSQL transaction-scoped advisory lock, because the invariant spans several rows that no database constraint can express.
+
 ### Manager Authority Resolver
 
 - **Belongs to:** Workforce.
@@ -251,6 +253,8 @@ v1's domain model has exactly one domain event with an established consumer:
 - **Why an event and not a direct call:** Workforce doesn't need Work Allocation's response and shouldn't need to know it exists to do its own job — deactivating an Employee must succeed on its own terms. This is the same reasoning `03-module-design.md` used to justify this exact event as the one clear case for publish/subscribe over a direct call.
 
 No other state change in this model is published as a domain event in v1. Every other significant fact — a Project being archived, an Allocation being created or cancelled, a Timesheet being submitted — is either captured privately as history (`AllocationHistory`) or queried on demand by whichever module needs to know, following the pull pattern established throughout `03-module-design.md`, `04-use-cases.md`, and `05-business-processes.md`. Publishing an event for a state with no current listener would be exactly the kind of premature complexity the project's engineering principles ask to be justified by real evidence, not built in advance of needing it. If Project archiving is later decided to retroactively affect open Allocations (flagged as an open question in `04-use-cases.md` and `05-business-processes.md`), `ProjectArchived` becoming a real domain event is the natural way to implement that — not before the decision is made.
+
+Workforce publishes `EmployeeDeactivated` on every deactivation call, even when the Employee is already inactive. Consumers are idempotent, so repeating the call repairs a partially failed delivery (no outbox in v1).
 
 ---
 

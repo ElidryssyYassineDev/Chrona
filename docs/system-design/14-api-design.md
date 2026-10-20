@@ -80,6 +80,8 @@ The Archive transition is defined in `11-state-diagrams.md`, Section 4.
 | PUT | `/api/v1/allocations/{id}` | Modify an allocation's period or percentage | Manager |
 | POST | `/api/v1/allocations/{id}/cancel` | Cancel an allocation | Manager |
 
+Additional endpoint: `GET /api/v1/allocations/capacity?employeeId=&periodStart=&periodEnd=&excludeAllocationId=` (Manager) returns `{ employeeId, periodStart, periodEnd, peakAllocatedPercentage, availablePercentage }`, computed by the same Capacity Validator as creation; it powers the form's live capacity feedback. `GET /allocations/{id}` returns `{ allocation, history[] }`. Reads are scoped by role: an Employee sees only their own allocations (another's returns `404`), a Manager sees all. Errors: `400 validation_error` (`employeeId`/`projectId` must reference an existing, active employee/project; invalid period or percentage), `409 capacity_exceeded`, `409 allocation_cancelled`, `404 not_found`.
+
 The Cancel transition is defined in `11-state-diagrams.md`, Section 2.
 
 ### Time Management
