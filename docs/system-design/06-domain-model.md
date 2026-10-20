@@ -74,6 +74,7 @@ An archived Project is frozen: it accepts no rename, no second archive, and no m
   - A Timesheet cannot be submitted with zero Time Entries.
   - Valid transitions only: Draft → Submitted; Submitted → Approved (terminal, immutable from that point on); Submitted → Draft — this is what "rejected" means for the Timesheet itself. The rejection reason and the decision's history live in Approval Workflow's own `Approval` record, not on Timesheet (`03-module-design.md`).
   - The Timesheet records when it was most recently transitioned to Submitted, so a currently-pending decision can be told apart from a stale one after a resubmission (see `Approval`'s invariants below).
+  A Timesheet is unique per Employee and exact period. A Time Entry's Allocation must belong to the Timesheet's Employee (`03-module-design.md`). An entry can only be written — added or changed — while its Allocation is active and covers the entry's date, in addition to the date falling within the Timesheet's own period. Add, edit and submit on one Timesheet are serialized with a PostgreSQL transaction-scoped advisory lock, so an entry can never be added to a Timesheet that has just been submitted.
 - **Owned Entities:** `TimeEntry`.
 - **Owned Value Objects:** `TimesheetStatus` (Draft, Submitted, Approved), `TimesheetPeriod`.
 

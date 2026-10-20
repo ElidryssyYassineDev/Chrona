@@ -161,6 +161,7 @@ Check: `ck_approvals_reason_consistency` — `outcome <> 'Rejected' OR reason IS
 
 **Composite indexes.** One, and only one, meets "supported by an actual use case": `ix_allocations_employee_id_status`, on `(employee_id, status)`, replacing the plain `employee_id` index rather than adding to it — leftmost-prefix matching means a query filtering on `employee_id` alone still uses it. This serves the Capacity Validator's real, frequent query — every Create Allocation and Modify Allocation call needs "this Employee's other *active* Allocations" (`06-domain-model.md`, Section 6) — more efficiently than filtering by employee first and status second in two separate steps. No other composite index is added; nothing else in this document points to a query that needs one.
 
+`ix_timesheets_employee_id` is replaced by the composite unique index `uk_timesheets_employee_id_period` on `(employee_id, period_start, period_end)`: it enforces "one Timesheet per Employee and exact period" (`04-use-cases.md`, Create Timesheet) against concurrent requests, and its leading column serves the foreign key.
 ---
 
 ## 5. Entity Framework Mapping Notes

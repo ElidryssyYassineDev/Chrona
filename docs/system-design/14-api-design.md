@@ -94,6 +94,8 @@ The Cancel transition is defined in `11-state-diagrams.md`, Section 2.
 | PUT | `/api/v1/timesheets/{id}/time-entries/{entryId}` | Edit a time entry | Employee |
 | POST | `/api/v1/timesheets/{id}/submit` | Submit a timesheet | Employee |
 
+Additional endpoint: `GET /api/v1/timesheets?status=` (Employee, Manager) lists the caller's own timesheets as `{ timesheetId, periodStart, periodEnd, status, lastSubmittedAtUtc, entryCount, totalHours }`. `POST /api/v1/timesheets` returns `201` when it creates a timesheet and `200` with the existing one when the same Employee and exact period already have one. `GET /timesheets/{id}` returns the timesheet with its entries (`{ timeEntryId, allocationId, projectName, entryDate, hours, createdAtUtc }`) and `totalHours`. Until Approval Workflow (M6) adds manager authority, only the owning Employee can read or change a timesheet; anyone else gets `404`. Errors: `400 validation_error` (period, hours, `allocationId` must reference one of the caller's allocations), `404 not_found` / `employee_not_found` / `time_entry_not_found`, `409 timesheet_not_draft`, `409 timesheet_empty`, `409 entry_outside_timesheet_period`, `409 entry_outside_allocation_period`, `409 allocation_not_active`.
+
 The Submit transition (Draft → Submitted) is defined in `11-state-diagrams.md`, Section 3.
 
 ### Approval Workflow
