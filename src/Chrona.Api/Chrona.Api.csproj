@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Chrona.Modules.Workforce\Workforce.csproj" />
     <ProjectReference Include="..\Chrona.Modules.ProjectManagement\ProjectManagement.csproj" />
     <ProjectReference Include="..\Chrona.Modules.WorkAllocation\WorkAllocation.csproj" />
+    <ProjectReference Include="..\Chrona.Modules.TimeManagement\TimeManagement.csproj" />
   </ItemGroup>
 
 </Project>

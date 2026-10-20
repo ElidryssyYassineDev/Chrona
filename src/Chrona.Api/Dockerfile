@@ -6,6 +6,7 @@ COPY ["src/Chrona.Shared/Chrona.Shared.csproj", "src/Chrona.Shared/"]
 COPY ["src/Chrona.Modules.Workforce/Workforce.csproj", "src/Chrona.Modules.Workforce/"]
 COPY ["src/Chrona.Modules.ProjectManagement/ProjectManagement.csproj", "src/Chrona.Modules.ProjectManagement/"]
 COPY ["src/Chrona.Modules.WorkAllocation/WorkAllocation.csproj", "src/Chrona.Modules.WorkAllocation/"]
+COPY ["src/Chrona.Modules.TimeManagement/TimeManagement.csproj", "src/Chrona.Modules.TimeManagement/"]
 
 RUN dotnet restore "src/Chrona.Api/Chrona.Api.csproj"
 

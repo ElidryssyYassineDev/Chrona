@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjectManagement;
 using ProjectManagement.Infrastructure;
+using TimeManagement;
+using TimeManagement.Infrastructure;
 using WorkAllocation;
 using WorkAllocation.Infrastructure;
 using Workforce;
@@ -52,6 +54,7 @@ var connectionString = builder.Configuration.GetConnectionString("Chrona")
 builder.Services.AddWorkforceModule(connectionString);
 builder.Services.AddProjectManagementModule(connectionString);
 builder.Services.AddWorkAllocationModule(connectionString);
+builder.Services.AddTimeManagementModule(connectionString);
 
 var app = builder.Build();
 
@@ -69,16 +72,18 @@ app.MapEmployeeEndpoints();
 app.MapDepartmentEndpoints();
 app.MapProjectEndpoints();
 app.MapAllocationEndpoints();
+app.MapTimesheetEndpoints();
 
 app.MapGet("/health", () => "healthy");
 
 using (var scope = app.Services.CreateScope())
 {
-    // Ordre imposé par les FK inter-modules : Workforce, puis Project Management, puis Work Allocation.
+    // Ordre imposé par les FK inter-modules : Workforce, Project Management, Work Allocation, puis Time Management.
     var workforceDb = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
     await workforceDb.Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<ProjectManagementDbContext>().Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<WorkAllocationDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<TimeManagementDbContext>().Database.MigrateAsync();
 
     var seed = app.Configuration.GetSection("Seed");
     if (Guid.TryParse(seed["AdminSubjectId"], out var adminSubjectId))
