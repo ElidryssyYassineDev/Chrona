@@ -8,6 +8,7 @@ using ProjectManagement.Application.Projects.CreateProject;
 using ProjectManagement.Application.Projects.GetProject;
 using ProjectManagement.Application.Projects.ListProjects;
 using ProjectManagement.Application.Projects.UpdateProject;
+using ProjectManagement.Contracts;
 using ProjectManagement.Infrastructure;
 
 namespace ProjectManagement;
@@ -34,6 +35,7 @@ public static class ProjectManagementModule
         services.AddScoped<AddProjectMemberHandler>();
         services.AddScoped<RemoveProjectMemberHandler>();
         services.AddScoped<ListProjectMembersHandler>();
+        services.AddScoped<IProjectLookup, ProjectLookup>();
 
         return services;
     }
