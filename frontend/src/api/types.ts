@@ -38,3 +38,36 @@ export interface ProjectMember {
   employeeIsActive: boolean
   addedAtUtc: string
 }
+
+export interface Allocation {
+  allocationId: string
+  employeeId: string
+  employeeName: string
+  projectId: string
+  projectName: string
+  periodStart: string
+  periodEnd: string
+  percentage: number
+  status: 'Active' | 'Cancelled'
+  createdAtUtc: string
+}
+
+export interface AllocationHistoryEntry {
+  changeType: string
+  oldValue: string | null
+  newValue: string | null
+  changedAtUtc: string
+}
+
+export interface AllocationDetail {
+  allocation: Allocation
+  history: AllocationHistoryEntry[]
+}
+
+export interface Capacity {
+  employeeId: string
+  periodStart: string
+  periodEnd: string
+  peakAllocatedPercentage: number
+  availablePercentage: number
+}
