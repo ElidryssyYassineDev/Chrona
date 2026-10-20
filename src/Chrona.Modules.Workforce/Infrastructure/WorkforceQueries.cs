@@ -8,6 +8,12 @@ public sealed class WorkforceQueries(WorkforceDbContext db) : IWorkforceQueries
     public Task<bool> EmployeeExistsAndIsActiveAsync(Guid employeeId) =>
         db.Employees.AnyAsync(e => e.Id == employeeId && e.IsActive);
 
+    public Task<Guid?> GetEmployeeIdForPrincipalAsync(Guid subjectId) =>
+        db.Employees.AsNoTracking()
+            .Where(e => e.KeycloakSubjectId == subjectId)
+            .Select(e => (Guid?)e.Id)
+            .FirstOrDefaultAsync();
+
     public async Task<IReadOnlyDictionary<Guid, EmployeeSummary>> GetEmployeeSummariesAsync(
         IReadOnlyCollection<Guid> employeeIds)
     {

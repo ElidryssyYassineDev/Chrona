@@ -9,5 +9,6 @@ public sealed record EmployeeSummary(Guid EmployeeId, string FirstName, string L
 public interface IWorkforceQueries
 {
     Task<bool> EmployeeExistsAndIsActiveAsync(Guid employeeId);
+    Task<Guid?> GetEmployeeIdForPrincipalAsync(Guid subjectId);
     Task<IReadOnlyDictionary<Guid, EmployeeSummary>> GetEmployeeSummariesAsync(IReadOnlyCollection<Guid> employeeIds);
 }

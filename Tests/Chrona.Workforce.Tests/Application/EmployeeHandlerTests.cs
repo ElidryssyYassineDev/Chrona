@@ -22,7 +22,7 @@ public class EmployeeHandlerTests(PostgresFixture db)
     }
 
     private Task<Result> DeactivateAsync(Guid id) =>
-        db.RunAsync<Result>(c => new DeactivateEmployeeHandler(c).HandleAsync(new DeactivateEmployeeCommand(id)));
+        db.RunAsync<Result>(c => new DeactivateEmployeeHandler(c, NoOpDomainEventPublisher.Instance).HandleAsync(new DeactivateEmployeeCommand(id)));
 
     [Fact]
     public async Task Create_ReturnsDepartmentAndManagerNames()
