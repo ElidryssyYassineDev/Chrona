@@ -71,3 +71,33 @@ export interface Capacity {
   peakAllocatedPercentage: number
   availablePercentage: number
 }
+
+export interface TimeEntry {
+  timeEntryId: string
+  allocationId: string
+  projectName: string
+  entryDate: string
+  hours: number
+  createdAtUtc: string
+}
+
+export interface Timesheet {
+  timesheetId: string
+  employeeId: string
+  periodStart: string
+  periodEnd: string
+  status: 'Draft' | 'Submitted' | 'Approved'
+  lastSubmittedAtUtc: string | null
+  totalHours: number
+  entries: TimeEntry[]
+}
+
+export interface TimesheetSummary {
+  timesheetId: string
+  periodStart: string
+  periodEnd: string
+  status: 'Draft' | 'Submitted' | 'Approved'
+  lastSubmittedAtUtc: string | null
+  entryCount: number
+  totalHours: number
+}

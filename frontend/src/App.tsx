@@ -8,8 +8,9 @@ import { EmployeesPage } from './pages/EmployeesPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { AllocationsPage } from './pages/AllocationPage'
+import { TimesheetsPage } from './pages/TimesheetsPage'
 
-type Page = 'profile' | 'employees' | 'departments' | 'projects' | 'allocations'
+type Page = 'profile' | 'employees' | 'departments' | 'projects' | 'allocations' | 'timesheets'
 
 function App() {
   const auth = useAuth()
@@ -72,6 +73,11 @@ function Shell() {
           <button className={page === 'allocations' ? 'active' : ''} onClick={() => setPage('allocations')}>
             Allocations
           </button>
+
+          <button className={page === 'timesheets' ? 'active' : ''} onClick={()=> setPage('timesheets')}>
+            Timesheets
+          </button>
+
           {isManager && (
             <>
               <button className={page === 'employees' ? 'active' : ''} onClick={() => setPage('employees')}>
@@ -93,6 +99,7 @@ function Shell() {
         {isManager && page === 'departments' && <DepartmentsPage />}
         {page === 'projects' && <ProjectsPage isManager={isManager} />}
         {page === 'allocations' && <AllocationsPage isManager={isManager} />}
+        {page === 'timesheets' && <TimesheetsPage />}
       </main>
     </>
   )
