@@ -10,6 +10,7 @@ using WorkAllocation.Application.Allocations.ListAllocations;
 using WorkAllocation.Application.Allocations.ModifyAllocation;
 using WorkAllocation.Application.Events;
 using WorkAllocation.Infrastructure;
+using WorkAllocation.Contracts;
 
 namespace WorkAllocation;
 
@@ -31,6 +32,7 @@ public static class WorkAllocationModule
         services.AddScoped<GetAllocationHandler>();
         services.AddScoped<ListAllocationsHandler>();
         services.AddScoped<GetCapacityHandler>();
+        services.AddScoped<IAllocationLookup, AllocationLookup>();
 
         // Abonnement à l'événement publié par Workforce (06-domain-model.md, §7).
         services.AddScoped<IDomainEventHandler<EmployeeDeactivated>, EmployeeDeactivatedHandler>();
